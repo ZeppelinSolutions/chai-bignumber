@@ -36,9 +36,8 @@ module.exports = function (BN) {
       function overwriteMethod (originalAssertion) {
         return function () {
           if (utils.flag(this, 'bignumber')) {
-            const actual = convert(this._obj);
-
-            newAssertion.apply(this, [actual].concat([].slice.call(arguments).map(convert)));
+            const args = [this._obj].concat([].slice.call(arguments));
+            newAssertion.apply(this, args);
           } else {
             originalAssertion.apply(this, arguments);
           }
@@ -57,7 +56,6 @@ module.exports = function (BN) {
         return function () {
           if (utils.flag(this, 'bignumber')) {
             const actual = convert(this._obj);
-
             newAssertion.apply(this, [actual]);
           } else {
             originalAssertion.call(this);
@@ -72,17 +70,47 @@ module.exports = function (BN) {
 
     // BN.eq
     overwriteMethods(['equal', 'equals', 'eq'], function (actual, expected) {
-      this.assert(
-        isEqualTo.bind(expected)(actual),
-        'expected #{act} to equal #{exp}',
-        'expected #{act} to be different from #{exp}',
-        expected.toString(),
-        actual.toString()
-      );
+      if (utils.flag(this, 'deep')) {
+        // objects that contain BNs should be deeply compared with each other, e.g., if two arrays containing BNs are equal
+        this.assert(
+          utils.eql(actual, expected, {
+            comparator: function (val1, val2) {
+              if ((!isBN(val1) && (typeof val1 !== 'string')) || (!isBN(val2) && (typeof val2 !== 'string'))) {
+                // at least on of the two parameters cannot be converted to a BN
+                // return null to cause the function extensiveDeepEqual (see deep-eql) to ignore the comparator result on objects other than BN
+                // this is useful since the first invocation of extensiveDeepEqual may also call comparator on collections (e.g., array of BN) and objects
+                return null;
+              }
+
+              val1 = convert(val1);
+              val2 = convert(val2);
+
+              return val1.eq(val2);
+            }
+          }),
+          'expected #{this} to deeply equal #{exp}',
+          'expected #{this} to not deeply equal #{exp}',
+          expected,
+          actual
+        );
+      } else {
+        // two BN objects should be compared with each other
+        actual = convert(actual);
+        expected = convert(expected);
+        this.assert(
+          isEqualTo.bind(expected)(actual),
+          'expected #{act} to equal #{exp}',
+          'expected #{act} to be different from #{exp}',
+          expected.toString(),
+          actual.toString()
+        );
+      }
     });
 
     // BN.gt
     overwriteMethods(['above', 'gt', 'greaterThan'], function (actual, expected) {
+      actual = convert(actual);
+      expected = convert(expected);
       this.assert(
         isGreaterThan.bind(actual)(expected),
         'expected #{act} to be greater than #{exp}',
@@ -94,6 +122,8 @@ module.exports = function (BN) {
 
     // BN.gte
     overwriteMethods(['least', 'gte'], function (actual, expected) {
+      actual = convert(actual);
+      expected = convert(expected);
       this.assert(
         isGreaterThanOrEqualTo.bind(actual)(expected),
         'expected #{act} to be greater than or equal to #{exp}',
@@ -105,6 +135,8 @@ module.exports = function (BN) {
 
     // BN.lt
     overwriteMethods(['below', 'lt', 'lessThan'], function (actual, expected) {
+      actual = convert(actual);
+      expected = convert(expected);
       this.assert(
         isLessThan.bind(actual)(expected),
         'expected #{act} to be less than #{exp}',
@@ -116,6 +148,8 @@ module.exports = function (BN) {
 
     // BN.lte
     overwriteMethods(['most', 'lte'], function (actual, expected) {
+      actual = convert(actual);
+      expected = convert(expected);
       this.assert(
         isLessThanOrEqualTo.bind(actual)(expected),
         'expected #{act} to be less than or equal to #{exp}',
@@ -127,6 +161,9 @@ module.exports = function (BN) {
 
     // Equality with tolerance, using gte and lte
     overwriteMethods(['closeTo'], function (actual, expected, delta) {
+      actual = convert(actual);
+      expected = convert(expected);
+      delta = convert(delta);
       this.assert(
         isGreaterThanOrEqualTo.bind(actual)(expected.sub(delta)) && isLessThanOrEqualTo.bind(actual)(expected.add(delta)),
         `expected #{act} to be within '${delta}' of #{exp}`,

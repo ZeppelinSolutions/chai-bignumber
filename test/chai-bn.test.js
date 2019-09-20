@@ -28,6 +28,24 @@ describe('chai-bn', function () {
     ];
   };
 
+  const deepTesterGenerator = function (functionNames) {
+    return [
+      function (a, b) {
+        functionNames.forEach(functionName => {
+          a.should.have.a.bignumber.and.to.deep[functionName](b);
+          expect(a).to.have.a.bignumber.and.to.deep[functionName](b);
+        });
+      },
+
+      function (a, b) {
+        functionNames.forEach(functionName => {
+          a.should.have.a.bignumber.and.not.to.deep[functionName](b);
+          expect(a).to.have.a.bignumber.and.not.to.deep[functionName](b);
+        });
+      }
+    ];
+  };
+
   const argTypeChecker = function (tester, notTester) {
     it('fails when first argument is not BN or string', function () {
       const testCases = [
@@ -60,15 +78,16 @@ describe('chai-bn', function () {
 
   const toBNCombinations = function (a, b) {
     return [
-      [ a, b ],
-      [ new BN(a), b],
-      [ a, new BN(b) ],
-      [ new BN(a), new BN(b) ],
+      [a, b],
+      [new BN(a), b],
+      [a, new BN(b)],
+      [new BN(a), new BN(b)],
     ];
   };
 
-  describe('equal/equals/eq', function () {
+  describe('equal/equals/eq and .deep equal/equals/eq', function () {
     const [tester, notTester] = testerGenerator(['equal', 'equals', 'eq']);
+    const [deepTester, deepNotTester] = deepTesterGenerator(['equal', 'equals', 'eq']);
 
     it('asserts equality', function () {
       const testCases = [
@@ -94,6 +113,54 @@ describe('chai-bn', function () {
       testCases.forEach(([a, b]) => {
         notTester(a, b);
       });
+    });
+
+    it('asserts deep equality of arrays', function () {
+      deepTester(
+        [new BN(1), '2', new BN(-10), '123456789123456789123456789', '-123456789123456789123456789'],
+        [new BN(1), '2', '-10', '123456789123456789123456789', '-123456789123456789123456789']
+      );
+
+      deepTester(
+        [],
+        []
+      );
+    });
+
+    it('asserts deep inequality of arrays', function () {
+      deepNotTester(
+        [new BN(1), '2', new BN(-10), '-123456789123456789123456789', '123456789123456789123456789'],
+        [new BN(1), '2', '-10', '-123456789123456789123456789', '-123456789123456789123456789']
+      );
+
+      deepNotTester(
+        [],
+        ['-10']
+      );
+    });
+
+    it('asserts deep equality of objects', function () {
+      deepTester(
+        {a: '-10', b: '-123456789123456789123456789', c: '123456789123456789123456789', d: new BN(10)},
+        {a: new BN(-10), b: '-123456789123456789123456789', c: '123456789123456789123456789', d: new BN(10)}
+      );
+
+      deepTester(
+        {},
+        {}
+      );
+    });
+
+    it('asserts deep inequality of objects', function () {
+      deepNotTester(
+        {a: '-10', b: '-123456789123456789123456789', c: '123456789123456789123456789', d: new BN(10)},
+        {a: new BN(-10), b: '-123456789123456789123456789', c: '123456789123456789123456789', d: new BN(11)}
+      );
+
+      deepNotTester(
+        {},
+        {a: '-10'}
+      );
     });
 
     argTypeChecker(tester, notTester);
