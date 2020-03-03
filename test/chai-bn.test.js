@@ -7,6 +7,8 @@ chai.use(require('../chai-bn')(BN));
 chai.config.includeStack = true;
 
 describe('chai-bn', function () {
+  const valuesMismatchCustomError = /Custom message: expected .* to equal .*/;
+  const valuesMatchCustomError = /Custom message: expected .* to be different from .*/;
   const actualMatchInvalidError = /to be an instance of BN/;
   const expectedMatchInvalidError = /to be an instance of BN or string/;
 
@@ -14,15 +16,15 @@ describe('chai-bn', function () {
     return [
       function (a, b) {
         functionNames.forEach(functionName => {
-          a.should.be.a.bignumber.that[functionName](b);
-          expect(a).to.be.a.bignumber.that[functionName](b);
+          a.should.be.a.bignumber.that[functionName](b, 'Custom message');
+          expect(a).to.be.a.bignumber.that[functionName](b, 'Custom message');
         });
       },
 
       function (a, b) {
         functionNames.forEach(functionName => {
-          a.should.not.be.a.bignumber.that[functionName](b);
-          expect(a).to.not.be.a.bignumber.that[functionName](b);
+          a.should.not.be.a.bignumber.that[functionName](b, 'Custom message');
+          expect(a).to.not.be.a.bignumber.that[functionName](b, 'Custom message');
         });
       }
     ];
@@ -60,39 +62,48 @@ describe('chai-bn', function () {
 
   const toBNCombinations = function (a, b) {
     return [
-      [ a, b ],
-      [ new BN(a), b],
-      [ a, new BN(b) ],
-      [ new BN(a), new BN(b) ],
+      [a, b],
+      [new BN(a), b],
+      [a, new BN(b)],
+      [new BN(a), new BN(b)],
     ];
   };
 
   describe('equal/equals/eq', function () {
     const [tester, notTester] = testerGenerator(['equal', 'equals', 'eq']);
-
+    const equalTestCases = [
+      ...toBNCombinations('10', '10'),
+      ...toBNCombinations('-10', '-10'),
+      ...toBNCombinations('123456789123456789123456789', '123456789123456789123456789'),
+      ...toBNCombinations('-123456789123456789123456789', '-123456789123456789123456789'),
+    ];
+    const notEqualTestCases = [
+      ...toBNCombinations('10', '9'),
+      ...toBNCombinations('-10', '-9'),
+      ...toBNCombinations('123456789123456789123456789', '123456789123456789123456788'),
+      ...toBNCombinations('-123456789123456789123456789', '-123456789123456789123456788'),
+    ];
     it('asserts equality', function () {
-      const testCases = [
-        ...toBNCombinations('10', '10'),
-        ...toBNCombinations('-10', '-10'),
-        ...toBNCombinations('123456789123456789123456789', '123456789123456789123456789'),
-        ...toBNCombinations('-123456789123456789123456789', '-123456789123456789123456789'),
-      ];
-
-      testCases.forEach(([a, b]) => {
+      equalTestCases.forEach(([a, b]) => {
         tester(a, b);
       });
     });
 
     it('asserts inequality', function () {
-      const testCases = [
-        ...toBNCombinations('10', '9'),
-        ...toBNCombinations('-10', '-9'),
-        ...toBNCombinations('123456789123456789123456789', '123456789123456789123456788'),
-        ...toBNCombinations('-123456789123456789123456789', '-123456789123456789123456788'),
-      ];
-
-      testCases.forEach(([a, b]) => {
+      notEqualTestCases.forEach(([a, b]) => {
         notTester(a, b);
+      });
+    });
+
+    it('equal fails on inequality', function () {
+      notEqualTestCases.forEach(([a, b]) => {
+        (() => tester(a, b)).should.throw(valuesMismatchCustomError);
+      });
+    });
+
+    it('not equal fails on equality', function () {
+      equalTestCases.forEach(([a, b]) => {
+        (() => notTester(a, b)).should.throw(valuesMatchCustomError);
       });
     });
 
