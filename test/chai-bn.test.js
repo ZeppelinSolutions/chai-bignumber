@@ -8,23 +8,35 @@ chai.config.includeStack = true;
 
 describe('chai-bn', function () {
   const valuesMismatchCustomError = /Custom message: expected .* to equal .*/;
+  const valuesMismatchDefault = /^expected .* to equal .*/;
   const valuesMatchCustomError = /Custom message: expected .* to be different from .*/;
+  const valuesMatchDefaultError = /^expected .* to be different from .*/;
   const actualMatchInvalidError = /to be an instance of BN/;
   const expectedMatchInvalidError = /to be an instance of BN or string/;
 
   const testerGenerator = function (functionNames) {
     return [
-      function (a, b) {
+      function (a, b, msg) {
         functionNames.forEach(functionName => {
-          a.should.be.a.bignumber.that[functionName](b, 'Custom message');
-          expect(a).to.be.a.bignumber.that[functionName](b, 'Custom message');
+          if (msg) {
+            a.should.be.a.bignumber.that[functionName](b, msg);
+            expect(a).to.be.a.bignumber.that[functionName](b, msg);
+          } else {
+            a.should.be.a.bignumber.that[functionName](b);
+            expect(a).to.be.a.bignumber.that[functionName](b);
+          }
         });
       },
 
-      function (a, b) {
+      function (a, b, msg) {
         functionNames.forEach(functionName => {
-          a.should.not.be.a.bignumber.that[functionName](b, 'Custom message');
-          expect(a).to.not.be.a.bignumber.that[functionName](b, 'Custom message');
+          if (msg) {
+            a.should.not.be.a.bignumber.that[functionName](b, msg);
+            expect(a).to.not.be.a.bignumber.that[functionName](b, msg);
+          } else {
+            a.should.not.be.a.bignumber.that[functionName](b);
+            expect(a).to.not.be.a.bignumber.that[functionName](b);
+          }
         });
       }
     ];
@@ -62,10 +74,10 @@ describe('chai-bn', function () {
 
   const toBNCombinations = function (a, b) {
     return [
-      [a, b],
-      [new BN(a), b],
-      [a, new BN(b)],
-      [new BN(a), new BN(b)],
+      [ a, b ],
+      [ new BN(a), b],
+      [ a, new BN(b) ],
+      [ new BN(a), new BN(b) ],
     ];
   };
 
@@ -97,13 +109,15 @@ describe('chai-bn', function () {
 
     it('equal fails on inequality', function () {
       notEqualTestCases.forEach(([a, b]) => {
-        (() => tester(a, b)).should.throw(valuesMismatchCustomError);
+        (() => tester(a, b)).should.throw(valuesMismatchDefault);
+        (() => tester(a, b, 'Custom message')).should.throw(valuesMismatchCustomError);
       });
     });
 
     it('not equal fails on equality', function () {
       equalTestCases.forEach(([a, b]) => {
-        (() => notTester(a, b)).should.throw(valuesMatchCustomError);
+        (() => notTester(a, b)).should.throw(valuesMatchDefaultError);
+        (() => notTester(a, b, 'Custom message')).should.throw(valuesMatchCustomError);
       });
     });
 
