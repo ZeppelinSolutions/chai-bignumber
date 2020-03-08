@@ -72,10 +72,10 @@ describe('chai-bn', function () {
 
   const toBNCombinations = function (a, b) {
     return [
-      [ a, b ],
-      [ new BN(a), b],
-      [ a, new BN(b) ],
-      [ new BN(a), new BN(b) ],
+      [a, b],
+      [new BN(a), b],
+      [a, new BN(b)],
+      [new BN(a), new BN(b)],
     ];
   };
 
