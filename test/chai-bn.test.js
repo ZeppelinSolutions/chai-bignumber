@@ -217,7 +217,7 @@ describe('chai-bn', function () {
       });
     });
 
-    it('above fails on unaboveness', function () {
+    it('at least fails fails on unaboveness', function () {
       notAtLeastTestCases.forEach(([a, b]) => {
         (() => tester(a, b)).should.throw();
         (() => tester(a, b, customMessage)).should.throw(customMessageRegex);
