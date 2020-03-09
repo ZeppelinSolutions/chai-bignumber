@@ -224,7 +224,7 @@ describe('chai-bn', function () {
       });
     });
 
-    it('not above fails on aboveness', function () {
+    it('at most fails on aboveness', function () {
       atLeastTestCases.forEach(([a, b]) => {
         (() => notTester(a, b)).should.throw();
         (() => notTester(a, b, customMessage)).should.throw(customMessageRegex);
