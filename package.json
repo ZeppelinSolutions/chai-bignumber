@@ -38,7 +38,8 @@
     "bn"
   ],
   "files": [
-    "chai-bn.js"
+    "chai-bn.js",
+    "chai-bn.d.ts"
   ],
   "dependencies": {},
   "peerDependencies": {
