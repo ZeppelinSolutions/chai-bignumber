@@ -3,6 +3,7 @@
   "version": "0.2.1",
   "description": "Chai assertions for comparing arbitrary-precision integers using the bignumber.js library",
   "main": "chai-bn.js",
+  "types": "chai-bn.d.ts",
   "scripts": {
     "lint": "eslint .",
     "test": "mocha test/*.js"
