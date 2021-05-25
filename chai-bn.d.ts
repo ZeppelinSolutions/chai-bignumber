@@ -1,7 +1,7 @@
 import chai from "chai";
 import BN from "bn.js";
 
-declare global {
+declare module "chai-bn" {
     export namespace Chai {
         export interface BNComparer extends NumberComparer {
             (value: BN | string, message?: string): BNAssertion;
