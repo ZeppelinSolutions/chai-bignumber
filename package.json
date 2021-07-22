@@ -9,11 +9,11 @@
     "test": "mocha test/*.js"
   },
   "devDependencies": {
-    "bn.js": "^4.11.8",
-    "chai": "^4.2.0",
-    "eslint": "^5.11.1",
-    "eslint-plugin-mocha-no-only": "^1.1.0",
-    "mocha": "^5.2.0"
+    "bn.js": "^5.2.0",
+    "chai": "^4.3.4",
+    "eslint": "^7.31.0",
+    "eslint-plugin-mocha-no-only": "^1.1.1",
+    "mocha": "^9.0.2"
   },
   "author": "Nicolas Venturo <nicolas.venturo@gmail.com>",
   "license": "MIT",
@@ -43,7 +43,7 @@
   ],
   "dependencies": {},
   "peerDependencies": {
-    "bn.js": "^4.11.0",
+    "bn.js": "^5.0.0",
     "chai": "^4.0.0"
   }
 }
