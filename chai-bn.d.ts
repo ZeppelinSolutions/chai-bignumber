@@ -10,9 +10,6 @@ declare global {
         export interface BNCloseTo extends CloseTo {
             (value: BN | string, delta: BN | string, message?: string): BNAssertion;
         }
-        export interface BNBoolean {
-            (): BNAssertion;
-        }
         export interface BNAssertion extends Assertion {
             equal: BNComparer;
             equals: BNComparer;
@@ -28,8 +25,8 @@ declare global {
             least: BNComparer;
             most: BNComparer;
             closeTo: BNCloseTo;
-            negative: BNBoolean;
-            zero: BNBoolean;
+            negative: Assertion;
+            zero: Assertion;
         }
         export interface Assertion {
             bignumber: BNAssertion;
